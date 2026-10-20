@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Twin Forever 💙</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin:0; width:100%; height:100%; overflow:hidden; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    color: #f3f7ff;
+    background: linear-gradient(#08152f 0%, #182c55 48%, #f08c9e 100%);
+  }
+  canvas { position:fixed; inset:0; width:100%; height:100%; display:block; }
+  .message {
+    position:fixed; z-index:2; top:5%; left:50%; transform:translateX(-50%);
+    width:min(94%, 760px); text-align:center; pointer-events:none;
+    text-shadow:0 0 12px #79baff, 0 2px 4px #071126;
+  }
+  h1 { margin:0 0 10px; font-size:clamp(1.35rem, 4.8vw, 2.7rem); letter-spacing:.04em; }
+  p { margin:6px 0; font-size:clamp(.9rem, 2.7vw, 1.15rem); }
+  .pink { color:#ffd0e7; }
+  .hint {
+    position:fixed; z-index:2; bottom:2%; left:0; width:100%; text-align:center;
+    color:#f8f4ff; font-size:clamp(.75rem, 2vw, .95rem);
+    text-shadow:0 1px 5px #071126; padding:0 10px; pointer-events:none;
+  }
+</style>
+</head>
+<body>
+<canvas id="scene"></canvas>
+<div class="message">
+  <h1>MAKASIH UDAH JADI TWINS GUA 💙</h1>
+  <p>Lu ganteng kok, tapi lebih ganteng gua 😎</p>
+  <p class="pink">Twin forever, bro! 🧸🤜🤛</p>
+</div>
+<div class="hint">Dari gua buat twin gua — jangan sombong dulu wkwkwk ✈️</div>
+<script>
+(() => {
+  const canvas = document.getElementById('scene');
+  const ctx = canvas.getContext('2d');
+  let w, h, dpr, t = 0, stars = [], flowers = [];
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    w = innerWidth; h = innerHeight;
+    canvas.width = w*dpr; canvas.height = h*dpr;
+    canvas.style.width = w+'px'; canvas.style.height = h+'px';
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    stars = Array.from({length: Math.max(90, Math.floor(w*h/6500))}, () => ({
+      x:Math.random()*w, y:Math.random()*h*.72,
+      r:Math.random()*1.8+.4, phase:Math.random()*6.28, speed:Math.random()*.7+.2
+    }));
+    flowers = Array.from({length:65}, () => ({
+      x:Math.random()*w, y:h*.72+Math.random()*h*.25,
+      c:Math.random()>.5?'#ffd1e5':'#c9eaff', r:Math.random()*2+1
+    }));
+  }
+  window.addEventListener('resize', resize); resize();
+
+  function circle(x,y,r,color) {
+    ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fillStyle=color; ctx.fill();
+  }
+  function line(x1,y1,x2,y2,color,width=2) {
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2);
+    ctx.strokeStyle=color; ctx.lineWidth=width; ctx.lineCap='round'; ctx.stroke();
+  }
+  function bear(x, baseY, scale, phase, fur, shirt) {
+    ctx.save(); ctx.translate(x,baseY); ctx.scale(scale,scale);
+    const bob=Math.sin(phase)*3;
+    const leg=Math.sin(phase)*9;
+    // shadow
+    ctx.globalAlpha=.22; ctx.fillStyle='#061326';
+    ctx.beginPath(); ctx.ellipse(0,4,27,7,0,0,Math.PI*2); ctx.fill();
+    ctx.globalAlpha=1;
+    // legs, running
+    line(-8, -19+bob, -14+leg, 0, fur, 9);
+    line(8, -19+bob, 14-leg, 0, fur, 9);
+    // sneakers
+    line(-14+leg,0,-7+leg,0,shirt,7);
+    line(14-leg,0,21-leg,0,shirt,7);
+    // body / hoodie
+    ctx.fillStyle=shirt;
+    ctx.beginPath(); ctx.roundRect(-17,-57+bob,34,39,10); ctx.fill();
+    // arms
+    line(-13,-49+bob,-23+Math.cos(phase)*5,-35+Math.sin(phase)*6,fur,8);
+    line(13,-49+bob,23-Math.cos(phase)*5,-38-Math.sin(phase)*6,fur,8);
+    // ears and head
+    circle(-12,-70+bob,8,fur); circle(12,-70+bob,8,fur);
+    circle(0,-68+bob,19,fur);
+    circle(0,-62+bob,8,'#ead0b9');
+    circle(-6,-70+bob,2,'#172033'); circle(6,-70+bob,2,'#172033');
+    circle(0,-63+bob,2.3,'#172033');
+    // hoodie strings
+    line(-4,-50+bob,-4,-41+bob,'#f5eaff',1.5);
+    line(4,-50+bob,4,-41+bob,'#f5eaff',1.5);
+    ctx.restore();
+  }
+  function kite(x,y,phase) {
+    const kx=x+Math.sin(phase)*14, ky=y+Math.sin(phase*1.5)*8;
+    ctx.save(); ctx.translate(kx,ky); ctx.rotate(Math.sin(phase)*.12);
+    ctx.beginPath(); ctx.moveTo(0,-22); ctx.lineTo(18,0); ctx.lineTo(0,22); ctx.lineTo(-18,0); ctx.closePath();
+    ctx.fillStyle='rgba(115,190,255,.25)'; ctx.fill();
+    ctx.strokeStyle='#d8eaff'; ctx.lineWidth=2; ctx.stroke();
+    line(0,-22,0,22,'#ffc5e1',1.4); line(-18,0,18,0,'#ffc5e1',1.4);
+    ctx.restore();
+    let px=kx, py=ky+22;
+    for(let i=1;i<8;i++){
+      const nx=kx+Math.sin(phase+i*.65)*10+i*1.8;
+      const ny=ky+22+i*12;
+      line(px,py,nx,ny,'rgba(240,245,255,.75)',1);
+      if(i%2===0) circle(nx,ny,2.3,'#ffbddd');
+      px=nx; py=ny;
+    }
+  }
+  function tree(x,y,s) {
+    ctx.fillStyle='#4a332f'; ctx.fillRect(x-5*s,y-45*s,10*s,48*s);
+    circle(x,y-55*s,25*s,'#174e4d');
+    circle(x-15*s,y-43*s,19*s,'#1c6255');
+    circle(x+15*s,y-42*s,18*s,'#205b51');
+    // particle highlights
+    for(let i=0;i<10;i++) circle(x+(Math.random()-.5)*35*s,y-55*s+(Math.random()-.5)*35*s,1.4,'rgba(170,224,211,.8)');
+  }
+  function draw() {
+    t += .025;
+    ctx.clearRect(0,0,w,h);
+    // stars
+    stars.forEach(s=>{
+      const a=.35+.65*(.5+.5*Math.sin(t*s.speed+s.phase));
+      circle(s.x,s.y,s.r,`rgba(220,235,255,${a})`);
+    });
+    // moon
+    circle(w*.84,h*.19,24,'#fff0c5'); circle(w*.85,h*.175,22,'#18284c');
+    // distant hills
+    ctx.fillStyle='#243b61'; ctx.beginPath(); ctx.moveTo(0,h*.63);
+    ctx.quadraticCurveTo(w*.23,h*.45,w*.43,h*.63);
+    ctx.quadraticCurveTo(w*.7,h*.47,w,h*.61); ctx.lineTo(w,h); ctx.lineTo(0,h); ctx.fill();
+    // sunset glow
+    const grad=ctx.createRadialGradient(w*.52,h*.69,2,w*.52,h*.69,w*.48);
+    grad.addColorStop(0,'rgba(255,177,183,.48)'); grad.addColorStop(1,'rgba(255,177,183,0)');
+    ctx.fillStyle=grad; ctx.fillRect(0,h*.35,w,h*.5);
+    // grass
+    ctx.fillStyle='#153f42'; ctx.fillRect(0,h*.70,w,h*.30);
+    ctx.fillStyle='#1c5550'; ctx.beginPath(); ctx.moveTo(0,h*.75);
+    ctx.quadraticCurveTo(w*.5,h*.67,w,h*.75); ctx.lineTo(w,h); ctx.lineTo(0,h); ctx.fill();
+    // path
+    ctx.fillStyle='rgba(125,128,151,.35)';
+    ctx.beginPath(); ctx.ellipse(w*.5,h*.91,w*.36,h*.12,0,0,Math.PI*2); ctx.fill();
+    // trees
+    tree(w*.09,h*.77,1.15); tree(w*.20,h*.76,.72);
+    tree(w*.88,h*.77,1.1); tree(w*.76,h*.76,.75);
+    // little park bench
+    const by=h*.79, bx=w*.64;
+    line(bx-25,by,bx+25,by,'#b5a2a2',5);
+    line(bx-25,by-12,bx+25,by-12,'#d6b5b4',5);
+    line(bx-18,by-10,bx-22,by+12,'#a78d8a',3);
+    line(bx+18,by-10,bx+22,by+12,'#a78d8a',3);
+    // kite drifts across sky
+    kite(w*.68 + Math.sin(t*.35)*w*.09, h*.34, t);
+    // two running bear twins
+    const runX = w*.49 + Math.sin(t*.8)*w*.045;
+    const baseY = h*.84;
+    bear(runX-31,baseY,Math.min(1.12,w/600),t*4,'#a97653','#397eb5');
+    bear(runX+31,baseY,Math.min(1.12,w/600),t*4+1,'#d2d5dc','#263c61');
+    // flower / firefly particles
+    flowers.forEach((f,i)=>{
+      const flicker=.65+.35*Math.sin(t*2+i);
+      circle(f.x, f.y+Math.sin(t+i)*2, f.r, f.c);
+      if(i%4===0) circle(f.x+4,f.y-3,1.2,`rgba(255,245,190,${flicker})`);
+    });
+    // small drifting glowy dots around bears
+    for(let i=0;i<24;i++){
+      const x=(runX + Math.sin(t+i*2.2)*90 + w)%w;
+      const y=baseY-45+Math.cos(t*1.3+i)*45;
+      circle(x,y,1.5,i%2?'#8ad7ff':'#ffd2e7');
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+</script>
+</body>
+</html>
